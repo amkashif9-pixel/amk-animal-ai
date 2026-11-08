@@ -39,7 +39,7 @@ export const Logo: React.FC<LogoProps> = ({
       >
         <div className="w-full h-full rounded-[14px] overflow-hidden bg-slate-950 flex items-center justify-center">
           <img
-            src="/amk-monogram.jpg"
+            src={`${import.meta.env.BASE_URL}amk-monogram.jpg`}
             alt="AMK Animal AI Monogram"
             className="w-full h-full object-cover transform scale-105 hover:scale-110 transition-transform duration-300"
             onError={(e) => {

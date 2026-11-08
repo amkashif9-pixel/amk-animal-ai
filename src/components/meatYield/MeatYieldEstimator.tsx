@@ -295,7 +295,7 @@ export const MeatYieldEstimator: React.FC<MeatYieldEstimatorProps> = ({
       {/* Printable Certificate Header with Official AMK Monogram (visible only during print) */}
       <div className="hidden print:block mb-8 border-b-2 border-emerald-700 pb-4 text-center">
         <div className="flex items-center justify-center gap-3 mb-2">
-          <img src="/amk-monogram.jpg" alt="AMK Monogram" className="w-14 h-14 rounded-xl object-cover border border-emerald-600" />
+          <img src={`${import.meta.env.BASE_URL}amk-monogram.jpg`} alt="AMK Monogram" className="w-14 h-14 rounded-xl object-cover border border-emerald-600" />
           <div className="text-left">
             <h1 className="text-2xl font-black text-emerald-950">AMK ANIMAL AI — MEAT YIELD CERTIFICATE</h1>
             <p className="text-xs text-slate-600">Official Livestock Carcass Breakdown & Pre-Slaughter Yield Evaluation</p>

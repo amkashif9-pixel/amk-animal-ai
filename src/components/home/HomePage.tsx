@@ -79,7 +79,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
             {/* Top Monogram Emblem Badge */}
             <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white border border-emerald-200 text-emerald-950 shadow-sm animate-fade-in">
               <img
-                src="/amk-monogram.jpg"
+                src={`${import.meta.env.BASE_URL}amk-monogram.jpg`}
                 alt="AMK Monogram"
                 className="w-6 h-6 rounded-full object-cover shadow-xs border border-emerald-500"
               />
@@ -148,7 +148,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                   <div className="flex items-center justify-between text-white">
                     <div className="flex items-center gap-3">
                       <img
-                        src="/amk-monogram.jpg"
+                        src={`${import.meta.env.BASE_URL}amk-monogram.jpg`}
                         alt="AMK Monogram"
                         className="w-12 h-12 rounded-xl border border-white/40 shadow-lg object-cover"
                       />
