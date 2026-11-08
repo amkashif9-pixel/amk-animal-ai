@@ -92,4 +92,22 @@ describe('Phase 1 Routing: Canonical Section Mapping', () => {
     expect(resolveTab('#/unknown_route')).toBe('home');
     expect(resolveTab('')).toBe('home');
   });
+
+  it('should resolve pathname segments from SPA fallback', () => {
+    const resolveFromPathname = (pathname: string) => {
+      const segments = pathname.split('/').filter(Boolean);
+      const last = segments[segments.length - 1]?.toLowerCase().trim();
+      if (last && last !== 'amk-animal-ai' && last !== 'index.html' && TAB_ALIASES[last]) {
+        return TAB_ALIASES[last];
+      }
+      return 'home';
+    };
+
+    expect(resolveFromPathname('/amk-animal-ai/scanner')).toBe('scanner');
+    expect(resolveFromPathname('/amk-animal-ai/marketplace')).toBe('marketplace');
+    expect(resolveFromPathname('/amk-animal-ai/health')).toBe('health');
+    expect(resolveFromPathname('/amk-animal-ai/meat-yield')).toBe('meatYield');
+    expect(resolveFromPathname('/amk-animal-ai/')).toBe('home');
+    expect(resolveFromPathname('/amk-animal-ai/index.html')).toBe('home');
+  });
 });

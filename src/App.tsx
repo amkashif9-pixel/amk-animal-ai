@@ -75,6 +75,17 @@ const resolveTabFromLocation = (): string => {
     // Ignore URLSearchParams error in restricted environments
   }
 
+  // Check URL pathname (e.g. /amk-animal-ai/scanner or /scanner from SPA fallback)
+  try {
+    const segments = window.location.pathname.split('/').filter(Boolean);
+    const last = segments[segments.length - 1]?.toLowerCase().trim();
+    if (last && last !== 'amk-animal-ai' && last !== 'index.html' && TAB_ALIASES[last]) {
+      return TAB_ALIASES[last];
+    }
+  } catch (e) {
+    // Ignore pathname parsing errors
+  }
+
   return 'home';
 };
 
