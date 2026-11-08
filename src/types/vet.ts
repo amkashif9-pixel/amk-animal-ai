@@ -6,6 +6,7 @@ export interface Veterinarian {
   nameUr: string;
   degrees: string; // e.g. "DVM, M.Phil (Clinical Medicine), RVMP"
   licenseNumber?: string;
+  isDemo?: boolean;
   isVerified: boolean;
   verificationType?: 'manual_physical_inspection' | 'unverified';
   verifiedByAdmin?: string;

@@ -40,6 +40,7 @@ export interface MarketplaceListing {
   healthStatusDescriptionUr: string;
   isSold: boolean;
   isFeatured: boolean;
+  isSample?: boolean;
   isReported: boolean;
   reportCount: number;
   createdAt: string;

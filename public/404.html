@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>AMK Animal AI</title>
+    <script>
+      // Single Page Apps for GitHub Pages SPA Routing Fallback
+      // Preserves repository subpath: /amk-animal-ai/
+      (function () {
+        var pathSegmentsToKeep = 1; // 1 segment for GitHub Pages repository: /amk-animal-ai/
+        var l = window.location;
+        var pathSegments = l.pathname.split('/').filter(Boolean);
+        var repo = pathSegments.length > 0 ? '/' + pathSegments[0] : '';
+        var route = pathSegments.slice(pathSegmentsToKeep).join('/');
+        
+        var destination = repo + '/#/' + route + (l.search ? l.search : '') + l.hash;
+        window.location.replace(destination);
+      })();
+    </script>
+  </head>
+  <body>
+    <p>Redirecting to <a href="./">AMK Animal AI</a>...</p>
+  </body>
+</html>

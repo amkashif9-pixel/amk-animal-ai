@@ -10,6 +10,7 @@ import {
   MessageCircle,
   ShieldCheck,
   AlertTriangle,
+  AlertCircle,
   Flag,
   CheckCircle,
   MapPin,
@@ -60,6 +61,7 @@ export const MarketplaceView: React.FC = () => {
       healthStatusDescriptionUr: 'مکمل صحت مند اور ڈی ورمنگ شدہ۔',
       isSold: false,
       isFeatured: true,
+      isSample: true,
       isReported: false,
       reportCount: 0,
       createdAt: '2024-10-28T00:00:00Z',
@@ -99,6 +101,7 @@ export const MarketplaceView: React.FC = () => {
       healthStatusDescriptionUr: 'مکمل میڈیکل فٹنس سرٹیفکیٹ موجود ہے۔',
       isSold: false,
       isFeatured: true,
+      isSample: true,
       isReported: false,
       reportCount: 0,
       createdAt: '2024-10-29T00:00:00Z',
@@ -137,6 +140,7 @@ export const MarketplaceView: React.FC = () => {
       healthStatusDescriptionUr: 'ای ٹی وی اور چیچک کی ویکسین مکمل ہے۔',
       isSold: false,
       isFeatured: true,
+      isSample: true,
       isReported: false,
       reportCount: 0,
       createdAt: '2024-10-30T00:00:00Z',
@@ -175,6 +179,7 @@ export const MarketplaceView: React.FC = () => {
       healthStatusDescriptionUr: 'پی پی آر اور انتڑیو کے زہر کا حفاظتی ٹیکہ مکمل ہے۔',
       isSold: false,
       isFeatured: true,
+      isSample: true,
       isReported: false,
       reportCount: 0,
       createdAt: '2024-10-31T00:00:00Z',
@@ -213,6 +218,7 @@ export const MarketplaceView: React.FC = () => {
       healthStatusDescriptionUr: 'مکمل ویٹرنری میڈیکل فٹنس سرٹیفکیٹ تصدیق شدہ ہے۔',
       isSold: false,
       isFeatured: true,
+      isSample: true,
       isReported: false,
       reportCount: 0,
       createdAt: '2024-11-01T00:00:00Z',
@@ -350,6 +356,21 @@ export const MarketplaceView: React.FC = () => {
         </button>
       </div>
 
+      {/* Demo Marketplace Notice Banner */}
+      <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950 flex items-start gap-3 text-xs leading-relaxed">
+        <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+        <div>
+          <div className="font-extrabold text-amber-900 mb-0.5">
+            {isUrdu ? 'نمائش و ڈیمو منڈی نوٹس — برائے آزمائش' : 'Demonstration Marketplace Notice — Reference Catalog'}
+          </div>
+          <p className="text-amber-800">
+            {isUrdu
+              ? 'نیچے موجود تمام اشتہارات صرف پلیٹ فارم ڈیمو اور جانچ کے نمونے ہیں۔ یہ فعال براہِ راست فروخت کی پیشکش نہیں ہیں۔ تمام قیمتیں محض فرضی ریفرنس ہیں۔ اگر آپ اپنا حقیقی جانور فروخت کے لیے لسٹ کرنا چاہتے ہیں یا کوئی سوال ہے تو اے ایم کے پلیٹ فارم ہیلپ لائن (+923346682654) سے رابطہ کریں۔'
+              : 'All animal listings displayed below are demonstration placeholders to preview layout and features. They are NOT live sale offers, and displayed prices are demo reference estimates only. To register genuine livestock for sale or make inquiries, contact the official AMK Animal AI platform helpline (+923346682654).'}
+          </p>
+        </div>
+      </div>
+
       {/* Search and Filters Bar */}
       <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/90 shadow-xs mb-8 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
@@ -441,27 +462,46 @@ export const MarketplaceView: React.FC = () => {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
 
-                {item.isFeatured && (
+                {item.isSample ? (
+                  <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black uppercase tracking-wider shadow-md flex items-center gap-1 border border-amber-300">
+                    <AlertCircle className="w-3.5 h-3.5 text-slate-950" />
+                    <span>{isUrdu ? 'نمونہ اشتہار — برائے فروخت نہیں' : 'Sample Listing — Not Available for Sale'}</span>
+                  </span>
+                ) : item.isFeatured ? (
                   <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-emerald-600 text-white text-[10px] font-extrabold uppercase tracking-wider shadow-md">
                     Featured
                   </span>
-                )}
+                ) : null}
 
-                {item.sellerIsVerified && (
+                {item.sellerIsVerified && !item.isSample && (
                   <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/95 text-emerald-800 text-[10px] font-extrabold flex items-center gap-1 shadow-md">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                     <span>Verified</span>
                   </span>
                 )}
 
-                <div className="absolute bottom-3 left-3 bg-slate-900/80 backdrop-blur-md px-3 py-1 rounded-xl text-white font-black text-sm">
-                  {item.currency} {item.askingPrice.toLocaleString()}
-                  {item.isNegotiable && (
-                    <span className="text-[10px] font-medium text-slate-300 ml-1.5 font-normal">
-                      ({isUrdu ? 'کمی بیشی ممکن' : 'Negotiable'})
-                    </span>
-                  )}
-                </div>
+                {item.isSample ? (
+                  <div className="absolute bottom-3 left-3 bg-slate-950/85 backdrop-blur-md px-3 py-1.5 rounded-xl text-white border border-slate-700/60 shadow-lg">
+                    <div className="text-[10px] font-extrabold text-amber-300 uppercase tracking-wide">
+                      {isUrdu ? 'نمونہ تخمینی ریفرنس قیمت' : 'Demo Reference Price'}
+                    </div>
+                    <div className="font-black text-sm text-white">
+                      {item.currency} {item.askingPrice.toLocaleString()}
+                      <span className="text-[10px] font-medium text-slate-400 ml-1.5 font-normal">
+                        ({isUrdu ? 'غیر فعال پیشکش' : 'Not Active Offer'})
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="absolute bottom-3 left-3 bg-slate-900/80 backdrop-blur-md px-3 py-1 rounded-xl text-white font-black text-sm">
+                    {item.currency} {item.askingPrice.toLocaleString()}
+                    {item.isNegotiable && (
+                      <span className="text-[10px] font-medium text-slate-300 ml-1.5 font-normal">
+                        ({isUrdu ? 'کمی بیشی ممکن' : 'Negotiable'})
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Card Body */}
@@ -521,19 +561,19 @@ export const MarketplaceView: React.FC = () => {
 
                     {/* Direct WhatsApp Call to Action */}
                     <a
-                      href={`https://wa.me/${item.sellerWhatsapp.replace(/[^0-9]/g, '')}?text=Assalam-o-Alaikum,%20I%20am%20interested%20in%20your%20AMK%20Animal%20AI%20listing:%20${encodeURIComponent(item.titleEn)}`}
+                      href={`https://wa.me/${item.sellerWhatsapp.replace(/[^0-9]/g, '')}?text=Assalam-o-Alaikum,%20I%20am%20inquiring%20about%20the%20demo%20marketplace%20listing:%20${encodeURIComponent(item.titleEn)}%20on%20AMK%20Animal%20AI`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 transition shadow-sm"
                     >
                       <MessageCircle className="w-4 h-4 fill-white" />
-                      <span>{isUrdu ? 'واٹس ایپ' : 'WhatsApp'}</span>
+                      <span>{item.isSample ? (isUrdu ? 'اے ایم کے ہیلپ لائن' : 'AMK Helpline') : (isUrdu ? 'واٹس ایپ' : 'WhatsApp')}</span>
                     </a>
 
                     <a
                       href={`tel:${item.sellerPhone}`}
                       className="p-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition"
-                      title={t.marketplace.callSeller}
+                      title={item.isSample ? (isUrdu ? 'اے ایم کے ہیلپ لائن کال' : 'Call AMK Platform Helpline') : t.marketplace.callSeller}
                     >
                       <Phone className="w-4 h-4" />
                     </a>

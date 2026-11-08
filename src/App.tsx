@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from './i18n';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
@@ -16,8 +16,70 @@ import { AiVeterinaryChat } from './components/chat/AiVeterinaryChat';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { ApiKeyModal } from './components/settings/ApiKeyModal';
 
+const TAB_ALIASES: Record<string, string> = {
+  '': 'home',
+  home: 'home',
+  scanner: 'scanner',
+  scan: 'scanner',
+  camera: 'scanner',
+  health: 'health',
+  disease: 'health',
+  'market-price': 'marketPrice',
+  marketprice: 'marketPrice',
+  price: 'marketPrice',
+  mandi: 'marketPrice',
+  'meat-yield': 'meatYield',
+  meatyield: 'meatYield',
+  meat: 'meatYield',
+  nutrition: 'nutrition',
+  feed: 'nutrition',
+  diet: 'nutrition',
+  calendar: 'calendar',
+  vaccination: 'calendar',
+  vaccines: 'calendar',
+  profiles: 'profiles',
+  animals: 'profiles',
+  herd: 'profiles',
+  marketplace: 'marketplace',
+  bazaar: 'marketplace',
+  mandi_bazaar: 'marketplace',
+  vets: 'vets',
+  'vet-directory': 'vets',
+  doctors: 'vets',
+  chat: 'chat',
+  'ai-chat': 'chat',
+  consultation: 'chat',
+  admin: 'admin',
+};
+
+const resolveTabFromLocation = (): string => {
+  if (typeof window === 'undefined') return 'home';
+
+  // Check window.location.hash (e.g. #/scanner, #scanner, #/meat-yield)
+  if (window.location.hash) {
+    const rawHash = window.location.hash.replace(/^#\/?/, '').trim().toLowerCase();
+    const cleanHash = rawHash.split('?')[0].replace(/\/+$/, '');
+    if (TAB_ALIASES[cleanHash]) {
+      return TAB_ALIASES[cleanHash];
+    }
+  }
+
+  // Check URL query search param (?tab=scanner or ?section=scanner)
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const paramTab = (params.get('tab') || params.get('section'))?.toLowerCase().trim();
+    if (paramTab && TAB_ALIASES[paramTab]) {
+      return TAB_ALIASES[paramTab];
+    }
+  } catch (e) {
+    // Ignore URLSearchParams error in restricted environments
+  }
+
+  return 'home';
+};
+
 export const AppContent: React.FC = () => {
-  const [currentTab, setCurrentTab] = useState<string>('home');
+  const [currentTab, setCurrentTab] = useState<string>(() => resolveTabFromLocation());
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [navParams, setNavParams] = useState<{
     species?: string;
@@ -28,6 +90,27 @@ export const AppContent: React.FC = () => {
     caseSummary?: string;
     vaccineName?: string;
   }>({});
+
+  useEffect(() => {
+    const syncTabWithUrl = () => {
+      const tab = resolveTabFromLocation();
+      setCurrentTab(tab);
+    };
+
+    window.addEventListener('hashchange', syncTabWithUrl);
+    window.addEventListener('popstate', syncTabWithUrl);
+
+    // Initial sync
+    const initialTab = resolveTabFromLocation();
+    if (initialTab !== 'home' && window.location.hash) {
+      setCurrentTab(initialTab);
+    }
+
+    return () => {
+      window.removeEventListener('hashchange', syncTabWithUrl);
+      window.removeEventListener('popstate', syncTabWithUrl);
+    };
+  }, []);
 
   const handleNavigate = (
     tab: string,
@@ -43,6 +126,19 @@ export const AppContent: React.FC = () => {
   ) => {
     if (params) setNavParams(params);
     setCurrentTab(tab);
+
+    // Sync URL hash
+    if (typeof window !== 'undefined') {
+      const targetHash = tab === 'home' ? '' : `#/${tab}`;
+      if (tab === 'home') {
+        if (window.location.hash) {
+          history.pushState(null, '', window.location.pathname + window.location.search);
+        }
+      } else if (window.location.hash !== targetHash) {
+        window.location.hash = targetHash;
+      }
+    }
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

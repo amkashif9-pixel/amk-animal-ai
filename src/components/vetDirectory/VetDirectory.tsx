@@ -65,6 +65,21 @@ export const VetDirectory: React.FC = () => {
         </p>
       </div>
 
+      {/* Demo Directory Safety Disclaimer */}
+      <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950 flex items-start gap-3 text-xs leading-relaxed">
+        <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+        <div>
+          <div className="font-extrabold text-amber-900 mb-0.5">
+            {isUrdu ? 'نمائش و ڈیمو ویٹرنری ڈائریکٹری نوٹس' : 'Demonstration Veterinary Directory Notice'}
+          </div>
+          <p className="text-amber-800">
+            {isUrdu
+              ? 'نیچے درج تمام ویٹرنری پروفائلز صرف پلیٹ فارم ڈیمو اور آزمائشی نمائش کے لیے ہیں۔ یہ حقیقی فعال ڈاکٹرز کے تصدیق شدہ کلینکس نہیں ہیں۔ جعلی نمبرز پر رابطہ روکنے کے لیے ڈمی رابطے غیر فعال کر دیے گئے ہیں۔ کسی بھی جانور کی فوری بیماری میں اپنے قریبی سرکاری ویٹرنری ہسپتال سے رجوع کریں یا اے ایم کے ہیلپ لائن (+923346682654) پر رابطہ کریں۔'
+              : 'All veterinary profiles displayed below are demonstration placeholders. They are not active verified clinical accounts. Direct fake contact numbers have been disabled to protect users. For genuine animal medical emergencies, consult your local licensed veterinary dispensary or contact the official AMK Animal AI platform helpline (+923346682654).'}
+          </p>
+        </div>
+      </div>
+
       {/* Search and Filters Strip */}
       <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/90 shadow-xs mb-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
@@ -132,7 +147,12 @@ export const VetDirectory: React.FC = () => {
 
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5 mb-1">
-                    {vet.isVerified ? (
+                    {vet.isDemo ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 text-[10px] font-extrabold border border-amber-300">
+                        <AlertCircle className="w-3 h-3 text-amber-600" />
+                        <span>{isUrdu ? 'ڈیمو پروفائل — غیر تصدیق شدہ ڈاکٹر' : 'Demo Profile — Not a Verified Doctor'}</span>
+                      </span>
+                    ) : vet.isVerified ? (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-extrabold border border-emerald-200">
                         <ShieldCheck className="w-3 h-3 text-emerald-600" />
                         <span>Verified RVMP</span>
@@ -202,23 +222,44 @@ export const VetDirectory: React.FC = () => {
 
             {/* Direct Contact Actions */}
             <div className="pt-3 border-t border-slate-100 flex items-center gap-2">
-              <a
-                href={`https://wa.me/${vet.whatsapp.replace(/[^0-9]/g, '')}?text=Assalam-o-Alaikum%20Dr.%20${encodeURIComponent(vet.nameEn)},%20I%20am%20contacting%20you%20via%20AMK%20Animal%20AI%20platform%20for%20a%20veterinary%20consultation.`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-xs"
-              >
-                <MessageCircle className="w-4 h-4 fill-white" />
-                <span>WhatsApp</span>
-              </a>
+              {vet.whatsapp ? (
+                <a
+                  href={`https://wa.me/${vet.whatsapp.replace(/[^0-9]/g, '')}?text=Assalam-o-Alaikum,%20I%20am%20contacting%20you%20via%20AMK%20Animal%20AI%20platform%20for%20veterinary%20guidance.`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-xs"
+                >
+                  <MessageCircle className="w-4 h-4 fill-white" />
+                  <span>{vet.isDemo ? (isUrdu ? 'اے ایم کے ہیلپ لائن' : 'AMK Helpline') : 'WhatsApp'}</span>
+                </a>
+              ) : (
+                <div
+                  className="flex-1 py-2 px-3 rounded-xl bg-slate-100 text-slate-500 font-semibold text-[11px] flex items-center justify-center gap-1.5 select-none"
+                  title={isUrdu ? 'ڈیمو پروفائل پر براہِ راست رابطہ غیر فعال ہے' : 'Direct contact disabled for demo profile'}
+                >
+                  <AlertCircle className="w-3.5 h-3.5 text-slate-400" />
+                  <span>{isUrdu ? 'رابطہ غیر فعال (ڈیمو)' : 'Contact Disabled (Demo)'}</span>
+                </div>
+              )}
 
-              <a
-                href={`tel:${vet.phone}`}
-                className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 transition"
-                title="Call Clinic"
-              >
-                <Phone className="w-4 h-4" />
-              </a>
+              {vet.phone ? (
+                <a
+                  href={`tel:${vet.phone}`}
+                  className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 transition"
+                  title={isUrdu ? 'کال کریں' : 'Call'}
+                >
+                  <Phone className="w-4 h-4" />
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="p-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-300 cursor-not-allowed"
+                  title={isUrdu ? 'ڈیمو نمبر دستیاب نہیں ہے' : 'Demo phone not available'}
+                >
+                  <Phone className="w-4 h-4" />
+                </button>
+              )}
 
               <a
                 href={`https://www.openstreetmap.org/?mlat=${vet.latitude}&mlon=${vet.longitude}#map=16/${vet.latitude}/${vet.longitude}`}

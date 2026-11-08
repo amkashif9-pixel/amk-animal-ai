@@ -31,7 +31,9 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate, onOpenSettings }) => {
   const { t, language } = useLanguage();
+  const isUrdu = language === 'ur';
   const { user, loginAsDemo, logout, isAdmin } = useAuth();
+  const isProductionPublic = import.meta.env.PROD && !user;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
 
@@ -111,62 +113,74 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate, onOpenSe
           <div className="flex items-center gap-2 sm:gap-3">
             <LanguageSwitch />
 
-            {/* Role Switcher Pill */}
-            <div className="relative">
-              <button
-                onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
-                className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-emerald-200 hover:border-emerald-400 bg-emerald-50/60 text-emerald-950 text-xs font-medium transition"
-                title="Switch Demo Role"
+            {/* Role Switcher Pill or Public Mode Badge */}
+            {isProductionPublic ? (
+              <div
+                className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-emerald-200 bg-emerald-50/70 text-emerald-950 text-xs font-semibold select-none"
+                title={isUrdu ? 'پبلک کسان رسائی موڈ — تمام بنیادی ٹولز دستیاب ہیں' : 'Public Farmer Access Mode — Core AI tools available'}
               >
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="font-bold capitalize text-emerald-900">
-                  {user?.role === 'admin'
-                    ? 'Admin'
-                    : user?.role === 'veterinarian'
-                    ? 'Doctor (RVMP)'
-                    : user?.role === 'trader'
-                    ? 'Trader'
-                    : 'Farmer'}
+                <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span className="font-bold text-emerald-900">
+                  {isUrdu ? 'کسان پبلک رسائی' : 'Public Farmer Access'}
                 </span>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-              </button>
+              </div>
+            ) : (
+              <div className="relative">
+                <button
+                  onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
+                  className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-emerald-200 hover:border-emerald-400 bg-emerald-50/60 text-emerald-950 text-xs font-medium transition"
+                  title="Switch Demo Role"
+                >
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="font-bold capitalize text-emerald-900">
+                    {user?.role === 'admin'
+                      ? 'Admin'
+                      : user?.role === 'veterinarian'
+                      ? 'Doctor (RVMP)'
+                      : user?.role === 'trader'
+                      ? 'Trader'
+                      : 'Farmer'}
+                  </span>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                </button>
 
-              {roleDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 z-50 animate-fade-in text-xs">
-                  <div className="px-3 py-1.5 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-                    Switch User Role
+                {roleDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 z-50 animate-fade-in text-xs">
+                    <div className="px-3 py-1.5 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                      Switch User Role
+                    </div>
+                    <button
+                      onClick={() => handleRoleChange('farmer')}
+                      className="w-full text-left px-3 py-2 hover:bg-brand-50 flex items-center justify-between text-slate-700 font-medium"
+                    >
+                      <span>🌾 Dairy / Livestock Farmer</span>
+                      {user?.role === 'farmer' && <span className="text-brand-600 font-bold">✓</span>}
+                    </button>
+                    <button
+                      onClick={() => handleRoleChange('veterinarian')}
+                      className="w-full text-left px-3 py-2 hover:bg-brand-50 flex items-center justify-between text-slate-700 font-medium"
+                    >
+                      <span>🩺 Licensed Vet (RVMP)</span>
+                      {user?.role === 'veterinarian' && <span className="text-brand-600 font-bold">✓</span>}
+                    </button>
+                    <button
+                      onClick={() => handleRoleChange('admin')}
+                      className="w-full text-left px-3 py-2 hover:bg-amber-50 flex items-center justify-between text-amber-800 font-bold"
+                    >
+                      <span>🛡️ System Admin (amkashif)</span>
+                      {user?.role === 'admin' && <span className="text-amber-600 font-bold">✓</span>}
+                    </button>
+                    <button
+                      onClick={() => handleRoleChange('trader')}
+                      className="w-full text-left px-3 py-2 hover:bg-brand-50 flex items-center justify-between text-slate-700 font-medium"
+                    >
+                      <span>🐂 Mandi Trader (بیوپاری)</span>
+                      {user?.role === 'trader' && <span className="text-brand-600 font-bold">✓</span>}
+                    </button>
                   </div>
-                  <button
-                    onClick={() => handleRoleChange('farmer')}
-                    className="w-full text-left px-3 py-2 hover:bg-brand-50 flex items-center justify-between text-slate-700 font-medium"
-                  >
-                    <span>🌾 Dairy / Livestock Farmer</span>
-                    {user?.role === 'farmer' && <span className="text-brand-600 font-bold">✓</span>}
-                  </button>
-                  <button
-                    onClick={() => handleRoleChange('veterinarian')}
-                    className="w-full text-left px-3 py-2 hover:bg-brand-50 flex items-center justify-between text-slate-700 font-medium"
-                  >
-                    <span>🩺 Licensed Vet (RVMP)</span>
-                    {user?.role === 'veterinarian' && <span className="text-brand-600 font-bold">✓</span>}
-                  </button>
-                  <button
-                    onClick={() => handleRoleChange('admin')}
-                    className="w-full text-left px-3 py-2 hover:bg-amber-50 flex items-center justify-between text-amber-800 font-bold"
-                  >
-                    <span>🛡️ System Admin (amkashif)</span>
-                    {user?.role === 'admin' && <span className="text-amber-600 font-bold">✓</span>}
-                  </button>
-                  <button
-                    onClick={() => handleRoleChange('trader')}
-                    className="w-full text-left px-3 py-2 hover:bg-brand-50 flex items-center justify-between text-slate-700 font-medium"
-                  >
-                    <span>🐂 Mandi Trader (بیوپاری)</span>
-                    {user?.role === 'trader' && <span className="text-brand-600 font-bold">✓</span>}
-                  </button>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
             {/* API Settings Trigger */}
             <button
@@ -222,15 +236,24 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onNavigate, onOpenSe
             </button>
           )}
 
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span>Role: {user?.fullName}</span>
-            <button
-              onClick={() => handleRoleChange(user?.role === 'admin' ? 'farmer' : 'admin')}
-              className="text-brand-600 font-semibold underline"
-            >
-              Toggle Admin / Farmer
-            </button>
-          </div>
+          {isProductionPublic ? (
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <span>{isUrdu ? 'رسائی:' : 'Access:'}</span>
+              <span className="font-bold text-emerald-800">
+                {isUrdu ? 'کسان پبلک رسائی' : 'Public Farmer Access'}
+              </span>
+            </div>
+          ) : (
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <span>Role: {user?.fullName || 'Demo Farmer'}</span>
+              <button
+                onClick={() => handleRoleChange(user?.role === 'admin' ? 'farmer' : 'admin')}
+                className="text-brand-600 font-semibold underline"
+              >
+                Toggle Admin / Farmer
+              </button>
+            </div>
+          )}
         </div>
       )}
     </header>
