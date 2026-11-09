@@ -101,6 +101,7 @@ export interface ScanPrediction {
   clarificationPromptUr?: string;
   detailedBreedInfo?: AnimalBreed;
   rawAiExplanation?: string;
+  dataSource?: 'live_ai' | 'reference_mode';
 }
 
 export interface AnimalProfile {

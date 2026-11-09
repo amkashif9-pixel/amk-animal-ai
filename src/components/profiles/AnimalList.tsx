@@ -22,6 +22,8 @@ import {
   Syringe,
   CheckCircle,
   Beef,
+  Download,
+  Upload,
 } from 'lucide-react';
 
 interface AnimalListProps {
@@ -38,11 +40,68 @@ export const AnimalList: React.FC<AnimalListProps> = ({ onNavigateToMeatYield })
     addMilkRecord,
     addWeightRecord,
     addVaccinationRecord,
+    exportHerdBackup,
+    importHerdBackup,
   } = useAnimals();
 
   const [selectedAnimalId, setSelectedAnimalId] = useState<string>(animals[0]?.id || '');
   const [showAddModal, setShowAddModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'milk' | 'weight' | 'health' | 'reproduction'>('overview');
+  const [backupNotice, setBackupNotice] = useState<string | null>(null);
+  const importFileRef = React.useRef<HTMLInputElement>(null);
+
+  const handleExportClick = () => {
+    try {
+      const json = exportHerdBackup();
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const dateStr = new Date().toISOString().split('T')[0];
+      a.href = url;
+      a.download = `AMK_Animal_AI_Herd_Backup_${dateStr}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setBackupNotice(
+        isUrdu
+          ? 'بیک اپ فائل کامیابی سے ڈاؤنلوڈ ہو گئی۔ اسے اپنے دوسرے موبائل یا پی سی پر Import کر سکتے ہیں۔'
+          : 'Backup JSON downloaded successfully! You can import this file on your other device.'
+      );
+      setTimeout(() => setBackupNotice(null), 5000);
+    } catch (e: any) {
+      setBackupNotice(isUrdu ? 'بیک اپ ڈاؤنلوڈ میں مسئلہ پیش آیا' : 'Failed to export backup');
+      setTimeout(() => setBackupNotice(null), 4000);
+    }
+  };
+
+  const handleImportFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      if (!content) return;
+      const res = importHerdBackup(content, 'merge');
+      if (res.success) {
+        setBackupNotice(
+          isUrdu
+            ? `بیک اپ بحال ہو گیا! کل ${res.count} جانور ریوڑ میں شامل/اپ ڈیٹ ہو گئے۔`
+            : `Backup restored! ${res.count} animals synchronized successfully.`
+        );
+      } else {
+        setBackupNotice(
+          isUrdu
+            ? `خرابی: ${res.error || 'بیک اپ فائل درست نہیں ہے'}`
+            : `Error: ${res.error || 'Invalid backup file'}`
+        );
+      }
+      setTimeout(() => setBackupNotice(null), 6000);
+    };
+    reader.readAsText(file);
+    if (e.target) e.target.value = '';
+  };
 
   // Quick Milk Log State
   const [quickMorningMilk, setQuickMorningMilk] = useState<number>(8.5);
@@ -127,7 +186,35 @@ export const AnimalList: React.FC<AnimalListProps> = ({ onNavigateToMeatYield })
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <input
+            ref={importFileRef}
+            type="file"
+            accept=".json,application/json"
+            className="hidden"
+            onChange={handleImportFileChange}
+          />
+
+          <button
+            type="button"
+            onClick={handleExportClick}
+            className="px-3.5 py-2.5 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-bold text-xs shadow-xs flex items-center gap-1.5 transition"
+            title={isUrdu ? 'ریوڑ کا بیک اپ ڈاؤنلوڈ کریں' : 'Export Herd Backup'}
+          >
+            <Download className="w-4 h-4 text-brand-600" />
+            <span>{isUrdu ? 'بیک اپ محفوظ کریں' : 'Export Backup'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => importFileRef.current?.click()}
+            className="px-3.5 py-2.5 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-bold text-xs shadow-xs flex items-center gap-1.5 transition"
+            title={isUrdu ? 'دوسرے ڈیوائس کا بیک اپ امپورٹ کریں' : 'Import Herd Backup'}
+          >
+            <Upload className="w-4 h-4 text-brand-600" />
+            <span>{isUrdu ? 'بیک اپ شامل کریں' : 'Import Backup'}</span>
+          </button>
+
           <button
             onClick={() => setShowAddModal(true)}
             className="px-5 py-2.5 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-600/20 flex items-center gap-2 transition"
@@ -137,6 +224,30 @@ export const AnimalList: React.FC<AnimalListProps> = ({ onNavigateToMeatYield })
           </button>
         </div>
       </div>
+
+      {/* Device Sync & Backup Notice */}
+      <div className="mb-6 p-4 rounded-2xl bg-brand-50/60 border border-brand-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-brand-900">
+        <div className="flex items-start gap-2.5">
+          <FolderHeart className="w-5 h-5 text-brand-700 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-bold text-brand-950">
+              {isUrdu ? '📱 ڈیوائس ڈیٹا و پرسنل بیک اپ' : '📱 Device Storage & Cross-Device Transfer'}
+            </p>
+            <p className="text-brand-800 text-[11px] leading-relaxed">
+              {isUrdu
+                ? 'آپ کے مویشیوں کا ریکارڈ آپ کے اس موبائل یا کمپیوٹر کے براؤزر میں محفوظ ہے۔ موبائل اور کمپیوٹر کے درمیان ڈیٹا منتقل کرنے کے لیے "بیک اپ محفوظ کریں" پر کلک کر کے فائل دوسرے ڈیوائس پر "بیک اپ شامل کریں" کے ذریعے لوڈ کر سکتے ہیں۔'
+                : 'Your herd data is saved locally in your browser. To use your data across both mobile and PC, export your backup JSON and import it on your other device.'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {backupNotice && (
+        <div className="mb-6 p-3.5 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-semibold flex items-center gap-2 animate-fade-in">
+          <CheckCircle className="w-4 h-4 text-emerald-700 flex-shrink-0" />
+          <span>{backupNotice}</span>
+        </div>
+      )}
 
       {animals.length === 0 ? (
         <div className="p-12 text-center bg-white rounded-3xl border border-slate-200">

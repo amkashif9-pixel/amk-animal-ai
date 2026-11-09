@@ -109,18 +109,67 @@ export async function testGeminiApiKey(key: string): Promise<{ success: boolean;
 }
 
 /**
- * Tests end-to-end connectivity to the Supabase Edge Function gemini-proxy.
+ * Calls secure Vercel Serverless Function /api/gemini
+ */
+export async function callVercelGeminiServerless(action: string, contents: any[]): Promise<any | null> {
+  try {
+    const res = await fetch('/api/gemini', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, contents }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data?.success && data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+      return data;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Tests end-to-end connectivity to Vercel Serverless Gemini Function or Supabase Edge Proxy.
  */
 export async function testServerProxyConnection(): Promise<{
   success: boolean;
   isConfigured: boolean;
   message: string;
 }> {
+  // 1. Try Vercel Serverless Function first
+  try {
+    const vRes = await fetch('/api/gemini', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'test_connection' }),
+    });
+    if (vRes.ok) {
+      const vData = await vRes.json();
+      if (vData.isConfigured && vData.success) {
+        return {
+          success: true,
+          isConfigured: true,
+          message: 'Vercel Serverless Gemini Proxy is operational and verified!',
+        };
+      } else if (vData.isConfigured === false) {
+        return {
+          success: false,
+          isConfigured: false,
+          message: vData.message || 'GEMINI_API_KEY is not configured in Vercel Environment Variables.',
+        };
+      }
+    }
+  } catch {
+    // Vercel serverless endpoint not active (e.g. running on GitHub Pages)
+  }
+
+  // 2. Check Supabase Edge Function
   if (!isSupabaseConfigured()) {
     return {
       success: false,
       isConfigured: false,
-      message: 'Supabase backend is not configured in .env. Platform operates in Offline Veterinary Reference Mode.',
+      message: 'Cloud server proxy is not configured. Platform operates in Verified Veterinary Clinical Reference Mode.',
     };
   }
 
@@ -291,20 +340,40 @@ STRICT VETERINARY RULES:
   "rawAiExplanation": "Observed key traits..."
 }`;
 
-  // 1. Production Secure Path: Supabase Edge Function Proxy
+  // 1. Secure Serverless Proxy Path (Vercel Serverless Function)
+  const validImages = imageDataUrls.slice(0, 4);
+  const imageParts = validImages.map((dataUrl) => {
+    const matches = dataUrl.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.+)$/);
+    return {
+      inlineData: {
+        mimeType: matches && matches[1] ? matches[1] : 'image/jpeg',
+        data: matches && matches[2] ? matches[2] : dataUrl.split(',')[1] || '',
+      },
+    };
+  });
+
+  const vercelData = await callVercelGeminiServerless('scan', [{ parts: [{ text: prompt }, ...imageParts] }]);
+  if (vercelData?.candidates?.[0]?.content?.parts?.[0]?.text) {
+    const responseText = vercelData.candidates[0].content.parts[0].text;
+    const parsed = extractAndParseJson<ScanPrediction>(responseText);
+    if (parsed && parsed.species && parsed.breed) {
+      const matchedBreed = ALL_BREEDS.find(
+        (b) =>
+          b.name.toLowerCase().includes(parsed.breed.toLowerCase()) ||
+          parsed.breed.toLowerCase().includes(b.name.toLowerCase())
+      );
+      return {
+        ...parsed,
+        confidenceScore: Math.min(100, Math.max(0, Number(parsed.confidenceScore) || 75)),
+        detailedBreedInfo: matchedBreed,
+        dataSource: 'live_ai',
+      };
+    }
+  }
+
+  // 2. Production Secure Path: Supabase Edge Function Proxy
   if (isSupabaseConfigured()) {
     try {
-      const validImages = imageDataUrls.slice(0, 4);
-      const imageParts = validImages.map((dataUrl) => {
-        const matches = dataUrl.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.+)$/);
-        return {
-          inlineData: {
-            mimeType: matches && matches[1] ? matches[1] : 'image/jpeg',
-            data: matches && matches[2] ? matches[2] : dataUrl.split(',')[1] || '',
-          },
-        };
-      });
-
       const { data, error } = await supabase.functions.invoke('gemini-proxy', {
         body: {
           action: 'scan',
@@ -325,6 +394,7 @@ STRICT VETERINARY RULES:
             ...parsed,
             confidenceScore: Math.min(100, Math.max(0, Number(parsed.confidenceScore) || 75)),
             detailedBreedInfo: matchedBreed,
+            dataSource: 'live_ai',
           };
         }
       }
@@ -333,21 +403,10 @@ STRICT VETERINARY RULES:
     }
   }
 
-  // 2. Direct Gemini Multimodal Vision Call (via VITE_GEMINI_API_KEY or saved Settings key)
+  // 3. Direct Gemini Multimodal Vision Call (via saved Settings key)
   const directApiKey = getStoredApiKey();
   if (directApiKey) {
     try {
-      const validImages = imageDataUrls.slice(0, 4);
-      const imageParts = validImages.map((dataUrl) => {
-        const matches = dataUrl.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.+)$/);
-        return {
-          inlineData: {
-            mimeType: matches && matches[1] ? matches[1] : 'image/jpeg',
-            data: matches && matches[2] ? matches[2] : dataUrl.split(',')[1] || '',
-          },
-        };
-      });
-
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${directApiKey}`,
         {
@@ -373,6 +432,7 @@ STRICT VETERINARY RULES:
             ...parsed,
             confidenceScore: Math.min(100, Math.max(0, Number(parsed.confidenceScore) || 75)),
             detailedBreedInfo: matchedBreed,
+            dataSource: 'live_ai',
           };
         }
       }
@@ -381,7 +441,7 @@ STRICT VETERINARY RULES:
     }
   }
 
-  // 3. Fallback Reference Mode (When Supabase cloud backend is not configured or network fails)
+  // 4. Fallback Reference Mode (When API key is not configured or network fails)
   // Operates completely offline with zero browser SDK dependencies, using verified breed standards.
   const candidateBreed = manualCategoryHint
     ? ALL_BREEDS.find((b) => b.speciesId.toLowerCase() === manualCategoryHint.toLowerCase()) || ALL_BREEDS[0]
@@ -405,13 +465,14 @@ STRICT VETERINARY RULES:
       'Visible health alertness',
     ],
     uncertaintyExplanationEn:
-      'Reference diagnostic mode: Visual traits match breed standard. Live AI key can be added in Settings for full real-time cloud vision analysis.',
+      'Reference diagnostic mode: Visual traits match breed standard. Live AI key can be added in Settings or Vercel Environment Variables for real-time cloud vision.',
     uncertaintyExplanationUr:
-      'ریفرنس تشخیصی موڈ: ظاہری علامات معیاری نسل سے مطابقت رکھتی ہیں۔ مکمل کلاؤڈ ویژن کے لیے ترتیبات میں جیمنائی کیز شامل کی جا سکتی ہیں۔',
+      'ریفرنس تشخیصی موڈ: ظاہری علامات معیاری نسل سے مطابقت رکھتی ہیں۔ کلاؤڈ AI ویژن کے لیے ترتیبات میں یا ورسل میں جیمنائی کی شامل کریں۔',
     isPurebredEstimateOnly: true,
     needsClarification: false,
     detailedBreedInfo: candidateBreed,
     rawAiExplanation: 'Analyzed using AMK Animal AI Veterinary Reference Knowledge Base.',
+    dataSource: 'reference_mode',
   };
 }
 
@@ -582,8 +643,28 @@ STRICT VETERINARY RULES:
   "clarifyingQuestionsUr": ["سوال 1؟", "سوال 2؟"]
 }`;
 
-    // A. Production Secure Proxy
-    if (isSupabaseConfigured()) {
+    // A. Vercel Serverless Health Triage
+    const vHealthData = await callVercelGeminiServerless('health_triage', [{ parts: [{ text: visionPrompt }, ...imageParts] }]);
+    if (vHealthData?.candidates?.[0]?.content?.parts?.[0]?.text) {
+      rawAiText = vHealthData.candidates[0].content.parts[0].text;
+      const parsed = extractAndParseJson<any>(rawAiText);
+      if (parsed) {
+        visualObservedEn = parsed.visualSymptomsObservedEn || [];
+        visualObservedUr = parsed.visualSymptomsObservedUr || [];
+        aiConfidence = Math.min(99, Math.max(30, Number(parsed.confidenceScore) || 80));
+        aiConfidenceLabel = parsed.confidenceLabel || 'Medium';
+        if (parsed.scientificLimitationsEn) aiLimitationsEn = parsed.scientificLimitationsEn;
+        if (parsed.scientificLimitationsUr) aiLimitationsUr = parsed.scientificLimitationsUr;
+        clarifyingQuestionsEn = parsed.clarifyingQuestionsEn || [];
+        clarifyingQuestionsUr = parsed.clarifyingQuestionsUr || [];
+        if (Array.isArray(parsed.suspectedDiseaseIds)) {
+          suspectedDiseaseIds = parsed.suspectedDiseaseIds;
+        }
+      }
+    }
+
+    // B. Production Secure Proxy
+    if (!rawAiText && isSupabaseConfigured()) {
       try {
         const { data, error } = await supabase.functions.invoke('gemini-proxy', {
           body: {
@@ -857,6 +938,7 @@ STRICT VETERINARY RULES:
       'قانونی اور ویٹرنری انتباہ: یہ تجزیہ صرف ابتدائی معلومات اور معاونت کے لیے ہے۔ یہ کسی مستند رجسٹرڈ ویٹرنری ڈاکٹر (RVMP) کے معائنے، نسخے یا حتمی تشخیص کا نعم البدل نہیں ہے۔ ڈاکٹر کی نگرانی کے بغیر کوئی بھی اینٹی بائیوٹک یا خطرناک انجیکشن ہرگز نہ لگائیں۔',
     isAiAnalysis: true,
     aiRawResponse: rawAiText || undefined,
+    dataSource: rawAiText ? 'live_ai' : 'reference_mode',
   };
 }
 
@@ -887,7 +969,28 @@ CRITICAL VETERINARY SAFETY RULES:
 5. Provide actionable husbandry, feed, biosecurity, and home first-aid measures.
 6. Signature at end of major recommendations: AMK Animal AI | Contact: +923346682654`;
 
-  // 1. Secure Cloud AI Path via Supabase Edge Function Proxy
+  // 1. Secure Serverless Proxy Path (Vercel Serverless Function)
+  try {
+    const contentsPayload = [
+      ...history.map((h) => ({
+        role: h.role,
+        parts: h.parts.map((p) => ({ text: p.text })),
+      })),
+      {
+        role: 'user',
+        parts: [{ text: `${systemInstruction}\n\nUser Question:\n${message}` }],
+      },
+    ];
+
+    const vChatData = await callVercelGeminiServerless('chat', contentsPayload);
+    if (vChatData?.candidates?.[0]?.content?.parts?.[0]?.text) {
+      return vChatData.candidates[0].content.parts[0].text;
+    }
+  } catch {
+    // Fall back to subsequent methods
+  }
+
+  // 2. Secure Cloud AI Path via Supabase Edge Function Proxy
   if (isSupabaseConfigured()) {
     if (!checkRateLimit()) {
       return language === 'ur'

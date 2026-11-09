@@ -17,6 +17,8 @@ interface AnimalContextType {
     animalId: string,
     record: { condition: string; symptoms: string; treatment: string; veterinarian?: string; resolved: boolean }
   ) => void;
+  exportHerdBackup: () => string;
+  importHerdBackup: (jsonContent: string, mode?: 'merge' | 'replace') => { success: boolean; count: number; error?: string };
 }
 
 const AnimalContext = createContext<AnimalContextType | undefined>(undefined);
@@ -284,6 +286,55 @@ export const AnimalProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     );
   };
 
+  const exportHerdBackup = (): string => {
+    const payload = {
+      app: 'AMK Animal AI',
+      version: '1.0',
+      exportedAt: new Date().toISOString(),
+      herd: animals,
+    };
+    return JSON.stringify(payload, null, 2);
+  };
+
+  const importHerdBackup = (
+    jsonContent: string,
+    mode: 'merge' | 'replace' = 'merge'
+  ): { success: boolean; count: number; error?: string } => {
+    try {
+      const data = JSON.parse(jsonContent);
+      const incomingList = Array.isArray(data) ? data : data?.herd;
+      if (!Array.isArray(incomingList) || incomingList.length === 0) {
+        return { success: false, count: 0, error: 'Invalid backup format or empty herd data' };
+      }
+
+      const validAnimals: AnimalProfile[] = incomingList.filter(
+        (a: any) => a && typeof a.name === 'string' && typeof a.species === 'string'
+      );
+
+      if (validAnimals.length === 0) {
+        return { success: false, count: 0, error: 'No valid animal profiles found in backup file' };
+      }
+
+      if (mode === 'replace') {
+        setAnimals(validAnimals);
+        return { success: true, count: validAnimals.length };
+      } else {
+        setAnimals((prev) => {
+          const map = new Map<string, AnimalProfile>();
+          prev.forEach((a) => map.set(a.id, a));
+          validAnimals.forEach((a) => {
+            const id = a.id || 'animal_' + Math.random().toString(36).substr(2, 9);
+            map.set(id, { ...a, id });
+          });
+          return Array.from(map.values());
+        });
+        return { success: true, count: validAnimals.length };
+      }
+    } catch (err: any) {
+      return { success: false, count: 0, error: err?.message || 'Failed to parse JSON backup file' };
+    }
+  };
+
   return (
     <AnimalContext.Provider
       value={{
@@ -296,6 +347,8 @@ export const AnimalProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         addWeightRecord,
         addVaccinationRecord,
         addHealthRecord,
+        exportHerdBackup,
+        importHerdBackup,
       }}
     >
       {children}

@@ -296,6 +296,7 @@ export interface HealthAssessmentResult {
   veterinaryDisclaimerUr: string;
   isAiAnalysis: boolean;
   aiRawResponse?: string;
+  dataSource?: 'live_ai' | 'reference_mode';
   // Follow-up & Case Management
   vetConfirmed?: boolean;
   confirmedDiagnosis?: string;

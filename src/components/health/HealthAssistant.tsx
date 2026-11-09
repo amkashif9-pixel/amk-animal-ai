@@ -1198,9 +1198,22 @@ export const HealthAssistant: React.FC<HealthAssistantProps> = ({
               <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
                   <div>
-                    <span className="text-xs font-bold text-brand-700 uppercase tracking-widest block mb-1">
-                      {isUrdu ? 'کلینیکل سکریننگ رپورٹ' : 'Clinical Screening Assessment'}
-                    </span>
+                    <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
+                      <span className="text-xs font-bold text-brand-700 uppercase tracking-widest">
+                        {isUrdu ? 'کلینیکل سکریننگ رپورٹ' : 'Clinical Screening Assessment'}
+                      </span>
+                      {result.dataSource === 'live_ai' ? (
+                        <span className="text-[10px] font-extrabold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200 flex items-center gap-1">
+                          <Sparkles className="w-3 h-3 text-purple-600" />
+                          <span>{isUrdu ? 'گوگل جیمنائی AI ویژن' : 'Live Gemini AI Vision'}</span>
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200 flex items-center gap-1">
+                          <ShieldCheck className="w-3 h-3 text-blue-600" />
+                          <span>{isUrdu ? 'کلینیکل ویٹرنری ریفرنس معیار' : 'Clinical Reference Standard'}</span>
+                        </span>
+                      )}
+                    </div>
                     <h3 className="text-2xl font-black text-slate-900">
                       {isUrdu ? result.primaryMatches[0]?.nameUr : result.primaryMatches[0]?.nameEn}
                     </h3>

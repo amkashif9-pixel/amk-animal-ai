@@ -424,9 +424,22 @@ export const AnimalScanner: React.FC<AnimalScannerProps> = ({
               {/* Header result banner */}
               <div className="flex items-start justify-between pb-4 border-b border-slate-100">
                 <div>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-brand-700 bg-brand-50 px-2.5 py-1 rounded-full border border-brand-200 inline-block mb-1">
-                    {prediction.species} ({prediction.speciesUrdu})
-                  </span>
+                  <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-brand-700 bg-brand-50 px-2.5 py-0.5 rounded-full border border-brand-200">
+                      {prediction.species} ({prediction.speciesUrdu})
+                    </span>
+                    {prediction.dataSource === 'live_ai' ? (
+                      <span className="text-[10px] font-extrabold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200 flex items-center gap-1">
+                        <Sparkles className="w-3 h-3 text-purple-600" />
+                        <span>{isUrdu ? 'گوگل جیمنائی AI ویژن' : 'Live Gemini AI Vision'}</span>
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200 flex items-center gap-1">
+                        <ShieldCheck className="w-3 h-3 text-blue-600" />
+                        <span>{isUrdu ? 'کلینیکل ویٹرنری ریفرنس معیار' : 'Clinical Reference Standard'}</span>
+                      </span>
+                    )}
+                  </div>
                   <h3 className="text-2xl font-extrabold text-slate-900">
                     {isUrdu ? prediction.breedUrdu : prediction.breed}
                   </h3>
