@@ -20,7 +20,17 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   </head>
   <body class="bg-slate-50 text-slate-900 antialiased min-h-screen selection:bg-brand-500 selection:text-white">
-    <div id="root"></div>
+    <div id="root">
+      <div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; text-align: center; padding: 20px;">
+        <img src="./amk-monogram.jpg" alt="AMK Animal AI" style="width: 72px; height: 72px; border-radius: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 16px;" onerror="this.style.display='none'" />
+        <h1 style="font-size: 20px; font-weight: 800; color: #0f172a; margin: 0 0 6px 0;">AMK Animal AI</h1>
+        <p style="font-size: 13px; color: #15803d; font-weight: 600; margin: 0 0 20px 0;">لوڈنگ ہو رہی ہے... برائے مہربانی انتظار فرمائیں</p>
+        <div style="width: 36px; height: 36px; border: 3px solid #e2e8f0; border-top-color: #15803d; border-radius: 50%; animation: amk-spin 0.8s linear infinite;"></div>
+        <style>
+          @keyframes amk-spin { to { transform: rotate(360deg); } }
+        </style>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
       if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {

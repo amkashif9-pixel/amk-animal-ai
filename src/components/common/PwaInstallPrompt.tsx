@@ -23,21 +23,27 @@ export const PwaInstallPrompt: React.FC = () => {
   )}`;
 
   useEffect(() => {
-    // Check if already in standalone / installed PWA mode
+    // Check if already in standalone / installed PWA mode safely
     if (typeof window !== 'undefined') {
-      const isStandaloneMode =
-        window.matchMedia('(display-mode: standalone)').matches ||
-        (window.navigator as unknown as { standalone?: boolean }).standalone === true;
-      setIsStandalone(isStandaloneMode);
+      try {
+        const isStandaloneMode =
+          (typeof window.matchMedia === 'function' && window.matchMedia('(display-mode: standalone)').matches) ||
+          (window.navigator as unknown as { standalone?: boolean })?.standalone === true;
+        setIsStandalone(!!isStandaloneMode);
 
-      const dismissedState = localStorage.getItem('amk_pwa_banner_dismissed');
-      if (dismissedState === 'true') {
-        setIsDismissed(true);
+        const dismissedState = localStorage.getItem('amk_pwa_banner_dismissed');
+        if (dismissedState === 'true') {
+          setIsDismissed(true);
+        }
+      } catch (err) {
+        // Safe fallback in restricted mobile browsers/webviews
       }
 
       const handleBeforeInstallPrompt = (e: Event) => {
-        e.preventDefault();
-        setInstallPrompt(e as BeforeInstallPromptEvent);
+        try {
+          e.preventDefault();
+          setInstallPrompt(e as BeforeInstallPromptEvent);
+        } catch (err) {}
       };
 
       window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -67,7 +73,9 @@ export const PwaInstallPrompt: React.FC = () => {
 
   const handleDismiss = () => {
     setIsDismissed(true);
-    localStorage.setItem('amk_pwa_banner_dismissed', 'true');
+    try {
+      localStorage.setItem('amk_pwa_banner_dismissed', 'true');
+    } catch (err) {}
   };
 
   const handleCopyLink = () => {
