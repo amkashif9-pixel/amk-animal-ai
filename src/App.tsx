@@ -15,6 +15,7 @@ import { VetDirectory } from './components/vetDirectory/VetDirectory';
 import { AiVeterinaryChat } from './components/chat/AiVeterinaryChat';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { ApiKeyModal } from './components/settings/ApiKeyModal';
+import { PwaInstallPrompt } from './components/common/PwaInstallPrompt';
 
 const TAB_ALIASES: Record<string, string> = {
   '': 'home',
@@ -155,6 +156,9 @@ export const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#fbfdfc] selection:bg-emerald-600 selection:text-white">
+      {/* PWA Mobile App Install Banner */}
+      <PwaInstallPrompt />
+
       {/* Navigation Header */}
       <Navbar
         currentTab={currentTab}
