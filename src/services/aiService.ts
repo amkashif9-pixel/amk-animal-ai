@@ -112,6 +112,10 @@ export async function testGeminiApiKey(key: string): Promise<{ success: boolean;
  * Calls secure Vercel Serverless Function /api/gemini
  */
 export async function callVercelGeminiServerless(action: string, contents: any[]): Promise<any | null> {
+  // If user is completely offline, skip network immediately for instant local response
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    return null;
+  }
   try {
     const res = await fetch('/api/gemini', {
       method: 'POST',
