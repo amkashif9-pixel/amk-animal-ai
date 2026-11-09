@@ -1,57 +1,9 @@
-import type { IncomingMessage, ServerResponse } from 'http';
-
-// Helper to reliably send JSON in both standard Node http and Vercel/Express runtimes
-function sendJson(res: any, statusCode: number, data: any) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
-
-  if (typeof res.status === 'function' && typeof res.json === 'function') {
-    return res.status(statusCode).json(data);
-  }
-  res.statusCode = statusCode;
-  res.setHeader('Content-Type', 'application/json');
-  res.end(JSON.stringify(data));
-}
-
-// Helper to safely parse request body across stream and pre-parsed bodies
-async function parseBody(req: any): Promise<any> {
-  if (req.body) {
-    if (typeof req.body === 'string') {
-      try {
-        return JSON.parse(req.body);
-      } catch {
-        return {};
-      }
-    }
-    return req.body;
-  }
-
-  return new Promise((resolve) => {
-    let raw = '';
-    req.on('data', (chunk: any) => {
-      raw += chunk;
-    });
-    req.on('end', () => {
-      try {
-        resolve(JSON.parse(raw));
-      } catch {
-        resolve({});
-      }
-    });
-    req.on('error', () => resolve({}));
-  });
-}
-
 // Sliding window in-memory rate limiter per IP (max 30 requests per minute)
-const rateLimitMap = new Map<string, number[]>();
+const rateLimitMap = new Map();
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = 30;
 
-function checkServerRateLimit(ip: string): boolean {
+function checkServerRateLimit(ip) {
   const now = Date.now();
   const timestamps = rateLimitMap.get(ip) || [];
   const validTimestamps = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
@@ -63,41 +15,74 @@ function checkServerRateLimit(ip: string): boolean {
   return true;
 }
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req, res) {
+  // Common CORS headers
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET,OPTIONS,PATCH,DELETE,POST,PUT',
+    'Access-Control-Allow-Headers':
+      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version',
+    'Content-Type': 'application/json',
+  };
+
+  // 1. Determine runtime: Node.js (res provided) vs Web Standard (Request -> Response)
+  const isNode = Boolean(res && typeof res.setHeader === 'function');
+
+  function sendOutput(statusCode, data) {
+    if (isNode) {
+      Object.entries(corsHeaders).forEach(([k, v]) => res.setHeader(k, v));
+      if (typeof res.status === 'function' && typeof res.json === 'function') {
+        return res.status(statusCode).json(data);
+      }
+      res.statusCode = statusCode;
+      res.end(JSON.stringify(data));
+      return;
+    }
+    return new Response(JSON.stringify(data), {
+      status: statusCode,
+      headers: corsHeaders,
+    });
+  }
+
   try {
-    if (req.method === 'OPTIONS') {
-      return sendJson(res, 200, { ok: true });
+    const method = req.method ? req.method.toUpperCase() : 'GET';
+
+    if (method === 'OPTIONS') {
+      return sendOutput(200, { ok: true });
     }
 
     // Health check
-    if (req.method === 'GET') {
+    if (method === 'GET') {
       const apiKey = (process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '').trim();
-      return sendJson(res, 200, {
+      return sendOutput(200, {
         status: 'active',
         service: 'AMK Animal AI Gemini Serverless Proxy',
         isConfigured: Boolean(apiKey && apiKey.length > 20),
       });
     }
 
-    if (req.method !== 'POST') {
-      return sendJson(res, 405, { error: 'Method Not Allowed. Use POST.' });
+    if (method !== 'POST') {
+      return sendOutput(405, { error: 'Method Not Allowed. Use POST.' });
     }
 
     // Rate limiter
-    const forwarded = req.headers ? req.headers['x-forwarded-for'] : undefined;
-    const clientIp = typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : '127.0.0.1';
+    let clientIp = '127.0.0.1';
+    if (req.headers) {
+      const fwd = req.headers['x-forwarded-for'] || (typeof req.headers.get === 'function' ? req.headers.get('x-forwarded-for') : null);
+      if (typeof fwd === 'string') clientIp = fwd.split(',')[0].trim();
+    }
     if (!checkServerRateLimit(clientIp)) {
-      return sendJson(res, 429, {
+      return sendOutput(429, {
         success: false,
         error: 'RATE_LIMIT_EXCEEDED',
         message: 'Too many requests. Please wait a minute before making another AI analysis request.',
       });
     }
 
-    // Retrieve server-side API Key
+    // Check Gemini API key
     const apiKey = (process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '').trim();
     if (!apiKey || apiKey.length < 20) {
-      return sendJson(res, 200, {
+      return sendOutput(200, {
         success: false,
         isConfigured: false,
         error: 'GEMINI_API_KEY_NOT_CONFIGURED',
@@ -106,9 +91,34 @@ export default async function handler(req: any, res: any) {
       });
     }
 
-    const body = await parseBody(req);
+    // Parse body
+    let body = req.body;
+    if (!body && typeof req.json === 'function') {
+      try {
+        body = await req.json();
+      } catch {
+        body = {};
+      }
+    } else if (typeof body === 'string') {
+      try {
+        body = JSON.parse(body);
+      } catch {
+        body = {};
+      }
+    } else if (!body && typeof req.on === 'function') {
+      body = await new Promise((resolve) => {
+        let raw = '';
+        req.on('data', (c) => { raw += c; });
+        req.on('end', () => {
+          try { resolve(JSON.parse(raw)); } catch { resolve({}); }
+        });
+        req.on('error', () => resolve({}));
+      });
+    }
+
     const { action, contents, model = 'gemini-1.5-flash' } = body || {};
 
+    // Connection test
     if (action === 'test_connection') {
       try {
         const pingUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
@@ -121,19 +131,19 @@ export default async function handler(req: any, res: any) {
         });
         const pingData = await pingRes.json();
         if (pingRes.ok && pingData?.candidates?.[0]?.content?.parts?.[0]?.text) {
-          return sendJson(res, 200, {
+          return sendOutput(200, {
             success: true,
             isConfigured: true,
             message: 'Google Gemini API key verified and operational on Vercel Serverless!',
           });
         }
-        return sendJson(res, 200, {
+        return sendOutput(200, {
           success: false,
           isConfigured: true,
           message: pingData?.error?.message || `HTTP ${pingRes.status} from Google Gemini API`,
         });
-      } catch (pingErr: any) {
-        return sendJson(res, 500, {
+      } catch (pingErr) {
+        return sendOutput(500, {
           success: false,
           error: 'CONNECTION_TEST_FAILED',
           message: pingErr?.message || 'Failed to ping Gemini API',
@@ -142,7 +152,7 @@ export default async function handler(req: any, res: any) {
     }
 
     if (!contents || !Array.isArray(contents)) {
-      return sendJson(res, 400, { error: 'Missing or invalid "contents" array in request body' });
+      return sendOutput(400, { error: 'Missing or invalid "contents" array in request body' });
     }
 
     const targetModel = model || 'gemini-1.5-flash';
@@ -159,7 +169,7 @@ export default async function handler(req: any, res: any) {
     if (!geminiRes.ok) {
       const errMsg = data?.error?.message || `HTTP ${geminiRes.status}: ${geminiRes.statusText}`;
       const isQuota = errMsg.toLowerCase().includes('quota') || geminiRes.status === 429;
-      return sendJson(res, geminiRes.status === 429 ? 429 : 200, {
+      return sendOutput(geminiRes.status === 429 ? 429 : 200, {
         success: false,
         error: isQuota ? 'QUOTA_EXHAUSTED' : 'GEMINI_API_ERROR',
         message: isQuota
@@ -168,14 +178,14 @@ export default async function handler(req: any, res: any) {
       });
     }
 
-    return sendJson(res, 200, {
+    return sendOutput(200, {
       success: true,
       source: 'live_gemini_serverless',
       candidates: data.candidates || [],
       promptFeedback: data.promptFeedback,
     });
-  } catch (err: any) {
-    return sendJson(res, 500, {
+  } catch (err) {
+    return sendOutput(500, {
       success: false,
       error: 'SERVERLESS_PROXY_EXCEPTION',
       message: err?.message || 'Internal error in Gemini Serverless function',
