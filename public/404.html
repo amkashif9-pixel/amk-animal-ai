@@ -4,16 +4,16 @@
     <meta charset="utf-8" />
     <title>AMK Animal AI</title>
     <script>
-      // Single Page Apps for GitHub Pages SPA Routing Fallback
-      // Preserves repository subpath: /amk-animal-ai/
+      // Single Page App Fallback for GitHub Pages and Hosting
       (function () {
-        var pathSegmentsToKeep = 1; // 1 segment for GitHub Pages repository: /amk-animal-ai/
         var l = window.location;
+        var isGitHubPages = l.hostname.indexOf('github.io') !== -1;
         var pathSegments = l.pathname.split('/').filter(Boolean);
-        var repo = pathSegments.length > 0 ? '/' + pathSegments[0] : '';
+        var repo = (isGitHubPages && pathSegments.length > 0) ? '/' + pathSegments[0] : '';
+        var pathSegmentsToKeep = isGitHubPages ? 1 : 0;
         var route = pathSegments.slice(pathSegmentsToKeep).join('/');
         
-        var destination = repo + '/#/' + route + (l.search ? l.search : '') + l.hash;
+        var destination = repo + '/#/' + route + (l.search ? l.search : '') + (l.hash ? l.hash : '');
         window.location.replace(destination);
       })();
     </script>
