@@ -77,19 +77,19 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center max-w-3xl mx-auto space-y-6">
             {/* Top Monogram Emblem Badge */}
-            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white border border-emerald-200 text-emerald-950 shadow-sm animate-fade-in">
+            <div className="inline-flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white border border-emerald-200 text-emerald-950 shadow-sm animate-fade-in max-w-full">
               <img
                 src={`${import.meta.env.BASE_URL}amk-monogram.jpg`}
                 alt="AMK Monogram"
-                className="w-6 h-6 rounded-full object-cover shadow-xs border border-emerald-500"
+                className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover shadow-xs border border-emerald-500 shrink-0"
               />
-              <span className="text-xs font-bold tracking-wide uppercase text-emerald-800">
+              <span className="text-[10px] sm:text-xs font-bold tracking-wide uppercase text-emerald-800 truncate sm:whitespace-normal">
                 {isUrdu ? 'اے ایم کے اینیمل اے آئی • اعتماد • جدت • مہارت' : 'AMK Animal AI • Trust • Innovation • Excellence'}
               </span>
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-6xl font-black text-slate-900 tracking-tight leading-[1.15]">
+            <h1 className="text-2xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.2]">
               {isUrdu ? (
                 <>
                   ہر جانور کی درست <span className="text-emerald-700">شناخت</span> اور سائنسی <span className="text-emerald-700">نگہداشت</span>
@@ -105,15 +105,15 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
             </h1>
 
             {/* Subtitle */}
-            <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-medium">
+            <p className="text-sm sm:text-lg text-slate-600 leading-relaxed font-medium px-2 sm:px-0">
               {t.hero.subtitle}
             </p>
 
             {/* Hero CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3 pt-2 w-full max-w-xl mx-auto">
               <button
                 onClick={() => onNavigate('scanner')}
-                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm sm:text-base shadow-xl shadow-emerald-700/25 flex items-center justify-center gap-2.5 transition transform hover:-translate-y-0.5"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm sm:text-base shadow-xl shadow-emerald-700/25 flex items-center justify-center gap-2.5 transition transform active:scale-95 min-h-[48px]"
               >
                 <Camera className="w-5 h-5" />
                 <span>{t.hero.scanNow}</span>
@@ -121,7 +121,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
               <button
                 onClick={() => onNavigate('meatYield')}
-                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white hover:bg-emerald-50 text-emerald-800 border-2 border-emerald-300 font-bold text-sm sm:text-base shadow-xs flex items-center justify-center gap-2.5 transition"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-white hover:bg-emerald-50 text-emerald-800 border-2 border-emerald-300 font-bold text-sm sm:text-base shadow-xs flex items-center justify-center gap-2.5 transition active:scale-95 min-h-[48px]"
               >
                 <Beef className="w-5 h-5 text-emerald-600" />
                 <span>{isUrdu ? 'گوشت کی پیداوار (Yield)' : 'Meat Yield Estimator'}</span>
@@ -129,7 +129,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
               <button
                 onClick={() => onNavigate('health')}
-                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 font-bold text-sm sm:text-base shadow-xs flex items-center justify-center gap-2.5 transition"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 font-bold text-sm sm:text-base shadow-xs flex items-center justify-center gap-2.5 transition active:scale-95 min-h-[48px]"
               >
                 <Activity className="w-5 h-5 text-emerald-600" />
                 <span>{t.hero.healthCheck}</span>
@@ -519,7 +519,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 p-1 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs font-bold">
+          <div className="flex items-center gap-1.5 sm:gap-2 p-1 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs font-bold overflow-x-auto max-w-full shrink-0">
             <button
               onClick={() => setSelectedCategoryTab('all')}
               className={`px-3 py-1.5 rounded-xl transition ${

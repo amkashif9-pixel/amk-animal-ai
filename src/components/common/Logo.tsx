@@ -18,17 +18,17 @@ export const Logo: React.FC<LogoProps> = ({
   const isUrdu = language === 'ur';
 
   const iconSizes = {
-    sm: 'w-9 h-9',
-    md: 'w-12 h-12',
-    lg: 'w-16 h-16',
-    xl: 'w-20 h-20',
+    sm: 'w-8 h-8 sm:w-9 sm:h-9',
+    md: 'w-10 h-10 sm:w-12 sm:h-12',
+    lg: 'w-14 h-14 sm:w-16 sm:h-16',
+    xl: 'w-16 h-16 sm:w-20 sm:h-20',
   };
 
   const textSizes = {
-    sm: 'text-base',
-    md: 'text-xl',
-    lg: 'text-2xl sm:text-3xl',
-    xl: 'text-3xl sm:text-4xl',
+    sm: 'text-sm sm:text-base',
+    md: 'text-base sm:text-xl',
+    lg: 'text-xl sm:text-3xl',
+    xl: 'text-2xl sm:text-4xl',
   };
 
   return (
@@ -59,7 +59,7 @@ export const Logo: React.FC<LogoProps> = ({
             <span className="bg-gradient-to-r from-emerald-600 to-green-800 bg-clip-text text-transparent font-black">AI</span>
           </div>
           {showTagline && (
-            <span className="text-[11px] font-semibold text-emerald-800/80 leading-tight mt-1 flex items-center gap-1">
+            <span className="hidden sm:flex text-[11px] font-semibold text-emerald-800/80 leading-tight mt-1 items-center gap-1">
               <span>{isUrdu ? 'اعتماد • جدت • مہارت' : 'Trust • Innovation • Excellence'}</span>
             </span>
           )}

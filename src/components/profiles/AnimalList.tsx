@@ -195,33 +195,35 @@ export const AnimalList: React.FC<AnimalListProps> = ({ onNavigateToMeatYield })
             onChange={handleImportFileChange}
           />
 
-          <button
-            type="button"
-            onClick={handleExportClick}
-            className="px-3.5 py-2.5 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-bold text-xs shadow-xs flex items-center gap-1.5 transition"
-            title={isUrdu ? 'ریوڑ کا بیک اپ ڈاؤنلوڈ کریں' : 'Export Herd Backup'}
-          >
-            <Download className="w-4 h-4 text-brand-600" />
-            <span>{isUrdu ? 'بیک اپ محفوظ کریں' : 'Export Backup'}</span>
-          </button>
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={handleExportClick}
+              className="flex-1 sm:flex-initial justify-center px-3 sm:px-3.5 py-2.5 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-bold text-xs shadow-xs flex items-center gap-1.5 transition min-h-[44px]"
+              title={isUrdu ? 'ریوڑ کا بیک اپ ڈاؤنلوڈ کریں' : 'Export Herd Backup'}
+            >
+              <Download className="w-4 h-4 text-brand-600" />
+              <span>{isUrdu ? 'بیک اپ محفوظ کریں' : 'Export Backup'}</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => importFileRef.current?.click()}
-            className="px-3.5 py-2.5 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-bold text-xs shadow-xs flex items-center gap-1.5 transition"
-            title={isUrdu ? 'دوسرے ڈیوائس کا بیک اپ امپورٹ کریں' : 'Import Herd Backup'}
-          >
-            <Upload className="w-4 h-4 text-brand-600" />
-            <span>{isUrdu ? 'بیک اپ شامل کریں' : 'Import Backup'}</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => importFileRef.current?.click()}
+              className="flex-1 sm:flex-initial justify-center px-3 sm:px-3.5 py-2.5 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-bold text-xs shadow-xs flex items-center gap-1.5 transition min-h-[44px]"
+              title={isUrdu ? 'دوسرے ڈیوائس کا بیک اپ امپورٹ کریں' : 'Import Herd Backup'}
+            >
+              <Upload className="w-4 h-4 text-brand-600" />
+              <span>{isUrdu ? 'بیک اپ شامل کریں' : 'Import Backup'}</span>
+            </button>
 
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="px-5 py-2.5 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-600/20 flex items-center gap-2 transition"
-          >
-            <Plus className="w-4 h-4" />
-            <span>{t.profiles.addAnimal}</span>
-          </button>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="w-full sm:w-auto justify-center px-5 py-2.5 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-600/20 flex items-center gap-2 transition min-h-[44px]"
+            >
+              <Plus className="w-4 h-4" />
+              <span>{t.profiles.addAnimal}</span>
+            </button>
+          </div>
         </div>
       </div>
 

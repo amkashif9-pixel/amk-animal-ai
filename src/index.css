@@ -3,7 +3,11 @@
 @tailwind utilities;
 
 @layer base {
-  html {
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+    width: 100%;
+    position: relative;
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
   }
@@ -12,22 +16,49 @@
     @apply antialiased text-slate-900 bg-[#fbfdfc] min-h-screen selection:bg-emerald-600 selection:text-white;
   }
 
-  /* Urdu typography enhancements */
+  #root {
+    overflow-x: hidden;
+    max-width: 100vw;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Touch optimization for mobile buttons and controls */
+  button, a, input, select, textarea {
+    touch-action: manipulation;
+  }
+
+  /* Urdu typography enhancements with compact badge/button heights */
   [dir="rtl"] {
     font-family: 'Noto Nastaliq Urdu', 'Noto Naskh Arabic', 'Jameel Noori Nastaleeq', 'Urdu Typesetting', Arial, sans-serif;
     letter-spacing: 0 !important;
   }
 
   [dir="rtl"] p,
-  [dir="rtl"] span,
-  [dir="rtl"] button,
+  [dir="rtl"] article,
+  [dir="rtl"] .prose,
+  [dir="rtl"] .urdu-text,
+  [dir="rtl"] label {
+    line-height: 1.85 !important;
+  }
+
   [dir="rtl"] h1,
   [dir="rtl"] h2,
   [dir="rtl"] h3,
   [dir="rtl"] h4,
   [dir="rtl"] h5,
   [dir="rtl"] h6 {
-    line-height: 1.85 !important;
+    line-height: 1.4 !important;
+  }
+
+  [dir="rtl"] button,
+  [dir="rtl"] .badge,
+  [dir="rtl"] .chip,
+  [dir="rtl"] select,
+  [dir="rtl"] input {
+    line-height: 1.35 !important;
   }
 
   [dir="ltr"] {

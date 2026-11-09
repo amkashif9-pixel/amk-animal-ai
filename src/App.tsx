@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from './i18n';
 import { Navbar } from './components/layout/Navbar';
+import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { Footer } from './components/layout/Footer';
 import { HomePage } from './components/home/HomePage';
 import { AnimalScanner } from './components/scanner/AnimalScanner';
@@ -94,6 +95,7 @@ const resolveTabFromLocation = (): string => {
 export const AppContent: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<string>(() => resolveTabFromLocation());
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [navParams, setNavParams] = useState<{
     species?: string;
     breed?: string;
@@ -139,6 +141,7 @@ export const AppContent: React.FC = () => {
   ) => {
     if (params) setNavParams(params);
     setCurrentTab(tab);
+    setIsMobileMenuOpen(false);
 
     // Sync URL hash
     if (typeof window !== 'undefined') {
@@ -168,6 +171,8 @@ export const AppContent: React.FC = () => {
         currentTab={currentTab}
         onNavigate={(tab) => handleNavigate(tab)}
         onOpenSettings={() => setIsApiKeyModalOpen(true)}
+        mobileMenuOpen={isMobileMenuOpen}
+        onToggleMobileMenu={() => setIsMobileMenuOpen((prev) => !prev)}
       />
 
       {/* Main Content Area */}
@@ -249,6 +254,14 @@ export const AppContent: React.FC = () => {
 
       {/* Global Footer with Brand Signature */}
       <Footer onNavigate={handleNavigate} />
+
+      {/* Mobile Fixed Bottom Navigation Bar */}
+      <MobileBottomNav
+        currentTab={currentTab}
+        onNavigate={(tab) => handleNavigate(tab)}
+        isMenuOpen={isMobileMenuOpen}
+        onToggleMenu={() => setIsMobileMenuOpen((prev) => !prev)}
+      />
 
       {/* Multimodal AI API Key Settings Modal */}
       <ApiKeyModal

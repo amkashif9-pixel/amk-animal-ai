@@ -143,7 +143,7 @@ export const AiVeterinaryChat: React.FC<AiVeterinaryChatProps> = ({ initialCaseS
       </div>
 
       {/* Main Chat Box Container */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-md flex flex-col h-[650px] overflow-hidden">
+      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-md flex flex-col h-[75vh] sm:h-[650px] min-h-[440px] overflow-hidden">
         {/* Top Control Bar: Active Animal Attachment + Clear Chat */}
         <div className="p-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 flex-1 min-w-0">

@@ -236,7 +236,7 @@ export const AnimalScanner: React.FC<AnimalScannerProps> = ({
         <div className="lg:col-span-6 space-y-4">
           <div
             onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-slate-300 hover:border-brand-500 bg-slate-50/80 hover:bg-brand-50/30 rounded-3xl p-8 text-center cursor-pointer transition-all duration-200 relative group flex flex-col items-center justify-center min-h-[280px]"
+            className="border-2 border-dashed border-slate-300 hover:border-brand-500 bg-slate-50/80 hover:bg-brand-50/30 rounded-3xl p-5 sm:p-8 text-center cursor-pointer transition-all duration-200 relative group flex flex-col items-center justify-center min-h-[220px] sm:min-h-[280px]"
           >
             <input
               ref={fileInputRef}
@@ -262,22 +262,22 @@ export const AnimalScanner: React.FC<AnimalScannerProps> = ({
               onChange={handleVideoUpload}
             />
 
-            <div className="w-16 h-16 rounded-2xl bg-white shadow-md flex items-center justify-center text-brand-600 mb-4 group-hover:scale-105 transition-transform">
-              <Upload className="w-8 h-8" />
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white shadow-md flex items-center justify-center text-brand-600 mb-3 sm:mb-4 group-hover:scale-105 transition-transform">
+              <Upload className="w-7 h-7 sm:w-8 sm:h-8" />
             </div>
 
-            <h3 className="text-base font-bold text-slate-800 mb-1">
+            <h3 className="text-sm sm:text-base font-bold text-slate-800 mb-1">
               {t.scanner.uploadPrompt}
             </h3>
-            <p className="text-xs text-slate-500 mb-4">
+            <p className="text-xs text-slate-500 mb-4 px-2">
               {t.scanner.multiImageHint}
             </p>
 
-            <div className="flex flex-wrap items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
+            <div className="flex flex-wrap items-center justify-center gap-2 w-full max-w-xs" onClick={(e) => e.stopPropagation()}>
               <button
                 type="button"
                 onClick={() => cameraInputRef.current?.click()}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-brand-600 hover:border-brand-300 text-xs font-semibold shadow-xs transition"
+                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-brand-600 hover:border-brand-300 text-xs font-semibold shadow-xs transition min-h-[44px]"
               >
                 <Camera className="w-4 h-4 text-brand-600" />
                 <span>{t.scanner.takePhoto}</span>
@@ -286,7 +286,7 @@ export const AnimalScanner: React.FC<AnimalScannerProps> = ({
               <button
                 type="button"
                 onClick={() => videoInputRef.current?.click()}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-brand-600 hover:border-brand-300 text-xs font-semibold shadow-xs transition"
+                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-brand-600 hover:border-brand-300 text-xs font-semibold shadow-xs transition min-h-[44px]"
               >
                 <Film className="w-4 h-4 text-brand-600" />
                 <span>{t.scanner.uploadVideo}</span>
